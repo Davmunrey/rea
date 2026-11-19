@@ -2141,8 +2141,9 @@ describe("managed derived caller names", () => {
   it("admits a caller name before building it", () => {
     let built = false;
     // A string-like type name records whether the caller was interpolated.
+    // It stays under 1,024 units: longer text is measured as a whole string.
     const declaringType = {
-      length: 2048,
+      length: 1000,
       charCodeAt: () => 0x54,
       toString: () => {
         built = true;
@@ -2163,7 +2164,7 @@ describe("managed derived caller names", () => {
 
     const budget = new ManagedDecodeBudget();
     // Only the remaining capacity matters to refusal before interpolation.
-    budget.reserve(64 * 1024 * 1024 - 1024, null);
+    budget.reserve(64 * 1024 * 1024 - 512, null);
     expect(() => edges([decoded], new Map(), budget)).toThrow(
       ManagedReaderFailure,
     );
